@@ -171,6 +171,12 @@ header { display: flex; flex-direction: column; gap: 14px; }
   padding: max(10px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
 #trainerView.is-fs .kbdhint, #trainerView.is-fs .note { display: none; }
 #trainerView.is-fs .stage { border-radius: 14px; }
+@media (max-width: 560px) {
+  .deck { gap: 8px; }
+  .deck .btns { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .deck .btns .btn { justify-content: center; padding: 8px 6px; font-size: .84rem; white-space: nowrap; }
+  .now .q { font-size: .88rem; }
+}
 @media (max-width: 760px) {
   .hud b { font-size: 1.15rem; }
   .hud div { padding: 6px 10px; }
@@ -288,6 +294,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
       <div class="btns">
         <button class="btn ghost" id="gReplay" type="button" disabled>↻ Replay (−30 m)</button>
         <button class="btn ghost" id="gRef" type="button" disabled>Hear a C</button>
+        <button class="btn ghost" id="gFs2" type="button">⛶ Full screen</button>
       </div>
     </div>
     <div class="pk" id="gKeys" aria-label="Answer keys"></div>
@@ -1157,6 +1164,7 @@ makeExample()
     document.documentElement.style.overflow = on ? 'hidden' : '';
     $('gFs').setAttribute('aria-label', on ? 'Exit full screen' : 'Play full screen');
     $('gFs').title = on ? 'Exit full screen (Esc)' : 'Full screen';
+    $('gFs2').textContent = on ? '✕ Exit full screen' : '⛶ Full screen';
     $('fsIcon').innerHTML = on ? '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>' : '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>';
     requestAnimationFrame(fitStage);
   }
@@ -1170,6 +1178,7 @@ makeExample()
     try { if (view.requestFullscreen) await view.requestFullscreen({ navigationUI: 'hide' }); } catch (_) {}
   }
   $('gFs').addEventListener('click', toggleFs);
+  $('gFs2').addEventListener('click', toggleFs);
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && isFs()) setFsUi(false); else requestAnimationFrame(fitStage); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && isFs() && !document.fullscreenElement) setFsUi(false); });
 
