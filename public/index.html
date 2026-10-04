@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Find the key of any MP3, M4A or AAC song, and train your ear with a parachute game.">
-<title>Song Key Finder</title>
+<meta name="description" content="Swara Pilot: find the key of any MP3, M4A or AAC song, and train your ear with a parachute game.">
+<title>Swara Pilot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -202,7 +202,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
 <div class="wrap">
   <header>
     <div>
-      <h1>Song Key Finder</h1>
+      <h1>Swara Pilot</h1>
       <p>Find the key of any song, then train your ear to hear keys on your own.</p>
     </div>
     <nav class="tabs" role="tablist" aria-label="Sections">
@@ -302,7 +302,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
         <span class="chip" id="gInst" hidden>Instrument</span><span class="q" id="gPrompt">Which note is this?</span>
       </div>
       <div class="btns">
-        <button class="btn ghost" id="gReplay" type="button" disabled>↻ Replay (−30 m)</button>
+        <button class="btn ghost" id="gReplay" type="button" disabled>↻ Replay (−15 m)</button>
         <button class="btn ghost" id="gRef" type="button" disabled>Hear a C</button>
         <button class="btn ghost" id="gFs2" type="button">⛶ Full screen</button>
       </div>
@@ -665,8 +665,8 @@ makeExample()
 // ================= Ear Trainer =================
 (() => {
   const CFG = {
-    start: 60, up: 13, down: 18, replayCost: 3, top: 100,
-    drift: { easy: 0.8, normal: 1.1, hard: 1.4 },     // altitude units per second while you think
+    start: 60, up: 13, down: 9, replayCost: 1.5, top: 100,  // falls are half as big as before
+    drift: { easy: 0.4, normal: 0.55, hard: 0.7 },    // altitude units per second while you think (half the old sink rate)
     choices: { easy: 3, normal: 6, hard: 12 },
   };
   const S = {
