@@ -1,7 +1,7 @@
 # Swara Pilot: push to GitHub and deploy to Firebase Hosting.
 # Run from this folder:  powershell -ExecutionPolicy Bypass -File .\deploy.ps1
 # Safe to run again later: it reuses the existing GitHub repo and Firebase project.
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"  # native tools report errors via exit codes, checked below
 Set-Location -Path $PSScriptRoot
 $Repo = "swara-pilot"
 
