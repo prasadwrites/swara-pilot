@@ -122,15 +122,18 @@ header { display: flex; flex-direction: column; gap: 14px; }
 
 /* ---------- Ear trainer ---------- */
 :root { --good: #12A594; --bad: #E5484D; --gold: #F5B70A; }
-.hud { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.hud { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 .hud div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; display: flex; flex-direction: column; min-width: 0; }
 .hud .lbl { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .hud b { font-family: var(--f-display); font-weight: 700; font-size: 1.45rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .hud b.bump { animation: bump .45s ease; }
+.lvlbar { display: block; height: 4px; border-radius: 2px; background: var(--line); margin-top: 4px; overflow: hidden; }
+.lvlbar i { display: block; height: 100%; width: 0; background: var(--gold); transition: width .3s; }
+.ovlabel { font: 500 .72rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; opacity: .85; margin-bottom: -6px; }
 @keyframes bump { 40% { transform: scale(1.25); color: var(--good); } }
 .stage { position: relative; height: 480px; min-height: 220px; border-radius: 18px; overflow: hidden; background: #8EC5FC; touch-action: manipulation; }
 .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 20px; background: rgba(12, 30, 60, .45); color: #fff; backdrop-filter: blur(2px); }
+.overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: safe center; overflow-y: auto; gap: 14px; text-align: center; padding: 20px; background: rgba(12, 30, 60, .45); color: #fff; backdrop-filter: blur(2px); }
 .overlay h2 { font-family: var(--f-display); font-weight: 700; font-size: clamp(2rem, 6vw, 3rem); margin: 0; letter-spacing: -0.02em; text-shadow: 0 3px 0 rgba(0,0,0,.2); }
 .overlay p { margin: 0; max-width: 46ch; font-size: .98rem; line-height: 1.45; }
 .overlay .stats { font-family: var(--f-mono); font-size: .95rem; }
@@ -140,6 +143,9 @@ header { display: flex; flex-direction: column; gap: 14px; }
 .go { font: 700 1.15rem var(--f-display); border: 0; border-radius: 999px; padding: 12px 34px; background: var(--gold); color: #2B1D00; cursor: pointer; box-shadow: 0 5px 0 #B58500; transition: transform .1s, box-shadow .1s; }
 .go:active { transform: translateY(4px); box-shadow: 0 1px 0 #B58500; }
 .go:focus-visible, .seg button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.stage.short .overlay #ovText, .stage.short .overlay h2:not(.over) { display: none; }
+.stage.short .overlay h2.over { font-size: 1.4rem; }
+.stage.short .seg { flex-wrap: nowrap; } .stage.short .seg button { padding: 5px 9px; }
 .toast { position: absolute; top: 14px; left: 50%; transform: translate(-50%, -10px); background: rgba(255,255,255,.95); color: #17325C; font: 600 1rem var(--f-body); padding: 8px 18px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.15); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; white-space: nowrap; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast.good { color: var(--good); } .toast.bad { color: var(--bad); }
@@ -183,8 +189,16 @@ header { display: flex; flex-direction: column; gap: 14px; }
   .instpick span { display: none; }
 }
 @media (max-width: 760px) {
-  .hud b { font-size: 1.15rem; }
-  .hud div { padding: 6px 10px; }
+  .hud { gap: 6px; }
+  .overlay { gap: 8px; padding: 12px 14px; }
+  .overlay h2 { font-size: 1.6rem; }
+  .overlay p { font-size: .84rem; line-height: 1.35; }
+  .ovlabel { margin-bottom: -3px; }
+  .seg button { padding: 5px 11px; font-size: .84rem; }
+  .go { padding: 10px 30px; }
+  .hud b { font-size: .95rem; white-space: nowrap; letter-spacing: -0.02em; }
+  .hud div { padding: 6px 7px; }
+  .hud .lbl { font-size: .58rem; letter-spacing: .04em; }
   .pk { height: 128px; }
 }
 
@@ -272,6 +286,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
       <div><span class="lbl">Score</span><b id="gScore">0</b></div>
       <div><span class="lbl">Streak</span><b id="gStreak">0</b></div>
       <div><span class="lbl">Altitude</span><b id="gAlt">600 m</b></div>
+      <div><span class="lbl">Level</span><b id="gLevel">1</b><span class="lvlbar" title="Progress to the next level"><i id="gLvlFill"></i></span></div>
       <div><span class="lbl">Best</span><b id="gBest">0</b></div>
     </div>
 
@@ -283,12 +298,20 @@ header { display: flex; flex-direction: column; gap: 14px; }
       <div class="toast" id="gToast" aria-live="polite"></div>
       <div class="overlay" id="gOverlay">
         <h2 id="ovTitle">Ear Trainer</h2>
-        <p id="ovText">A random instrument plays one note. Pick which note it is. Right answers lift your parachute; wrong ones drop you toward the sea, and you sink slowly while you think. Touch the water and the round is over.</p>
+        <p id="ovText">An instrument plays one note: name it! Right answers lift your parachute, wrong ones drop you toward the sea. Every level adds another octave.</p>
         <p class="stats" id="ovStats" hidden></p>
-        <div class="seg" role="group" aria-label="Difficulty">
-          <button type="button" data-diff="easy" aria-pressed="false">Easy · 3 choices</button>
-          <button type="button" data-diff="normal" aria-pressed="true">Normal · 6 choices</button>
-          <button type="button" data-diff="hard" aria-pressed="false">Hard · all 12</button>
+        <span class="ovlabel">Start level · each adds an octave</span>
+        <div class="seg" id="gLvlSeg" role="group" aria-label="Starting level">
+          <button type="button" data-level="0" aria-pressed="true" title="1 octave">Level 1</button>
+          <button type="button" data-level="1" aria-pressed="false" title="2 octaves">Level 2</button>
+          <button type="button" data-level="2" aria-pressed="false" title="3 octaves">Level 3</button>
+          <button type="button" data-level="3" aria-pressed="false" title="4 octaves">Level 4</button>
+        </div>
+        <span class="ovlabel">Answer choices</span>
+        <div class="seg" id="gDiffSeg" role="group" aria-label="Difficulty">
+          <button type="button" data-diff="easy" aria-pressed="false">Easy · 3</button>
+          <button type="button" data-diff="normal" aria-pressed="true">Normal · 6</button>
+          <button type="button" data-diff="hard" aria-pressed="false">Hard · 12</button>
         </div>
         <button class="go" id="gStart" type="button">Jump!</button>
       </div>
@@ -668,11 +691,19 @@ makeExample()
     start: 60, up: 13, down: 9, replayCost: 1.5, top: 100,  // falls are half as big as before
     drift: { easy: 0.4, normal: 0.55, hard: 0.7 },    // altitude units per second while you think (half the old sink rate)
     choices: { easy: 3, normal: 6, hard: 12 },
+    perLevel: 6,  // right answers needed to reach the next level
+    levels: [     // lowest MIDI note and number of octaves the notes can come from
+      { base: 60, oct: 1, range: 'C4–B4' },
+      { base: 48, oct: 2, range: 'C3–B4' },
+      { base: 48, oct: 3, range: 'C3–B5' },
+      { base: 36, oct: 4, range: 'C2–B5' },
+    ],
   };
   const S = {
     state: 'idle', diff: 'normal', alt: CFG.start, shown: CFG.start, score: 0, streak: 0, bestStreak: 0,
     correct: 0, rounds: 0, key: 0, mode: 'major', inst: null, pattern: null, root: 60, choices: [],
     phraseEnd: 0, wobble: 0, t: 0, visible: false, timer: 0, lastKey: -1, sinkT: 0,
+    level: 0, startLevel: 0, levelCorrect: 0, banner: null,
   };
 
   // ---------- Audio ----------
@@ -901,6 +932,9 @@ makeExample()
   function hud(bumpScore) {
     $('gScore').textContent = S.score; $('gStreak').textContent = S.streak ? `${S.streak}🔥` : '0';
     $('gBest').textContent = Math.max(loadBest(), S.score);
+    const maxed = S.level >= CFG.levels.length - 1;
+    $('gLevel').textContent = `${S.level + 1}`;
+    $('gLvlFill').style.width = maxed ? '100%' : `${(S.levelCorrect / CFG.perLevel) * 100}%`;
     if (bumpScore) { const el = $('gScore'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
   }
   let toastTimer = 0;
@@ -918,7 +952,9 @@ makeExample()
   }
   function startGame() {
     clearTimeout(S.timer);
-    Object.assign(S, { alt: CFG.start, shown: CFG.start, score: 0, streak: 0, bestStreak: 0, correct: 0, rounds: 0, wobble: 0, lastKey: -1 });
+    Object.assign(S, { alt: CFG.start, shown: CFG.start, score: 0, streak: 0, bestStreak: 0, correct: 0, rounds: 0, wobble: 0, lastKey: -1,
+      level: S.startLevel, levelCorrect: 0, banner: null });
+    showBanner(`Level ${S.level + 1}`, levelSub(S.level));
     particles.length = 0; floaters.length = 0;
     $('gOverlay').hidden = true; hud();
     gameOut();
@@ -927,12 +963,13 @@ makeExample()
   function newRound() {
     let k; do { k = Math.floor(Math.random() * 12); } while (k === S.lastKey);
     S.key = S.lastKey = k;
-    S.root = 55 + ((k - 7 + 12) % 12); // G3..F#4
+    const L = CFG.levels[S.level];
+    S.root = L.base + k + 12 * Math.floor(Math.random() * L.oct); // any octave the level allows
     S.inst = chooseInstrument();
     S.choices = makeChoices(k, CFG.choices[S.diff]);
     S.rounds++;
     syncInstUi();
-    $('gPrompt').textContent = `Note ${S.rounds} · which one is it?`;
+    $('gPrompt').textContent = `Level ${S.level + 1} (${L.range}) · note ${S.rounds} · which one is it?`;
     $('gReplay').disabled = false; $('gRef').disabled = false;
     S.state = 'answer'; paintKeys();
     S.phraseEnd = performance.now() + playPhrase() * 1000;
@@ -957,7 +994,10 @@ makeExample()
       toast(`Yes! ${name}${extra}`, 'good', 1500);
       paintKeys({ right: S.key });
       hud(true);
-      S.timer = setTimeout(newRound, 1300);
+      S.levelCorrect++;
+      if (S.levelCorrect >= CFG.perLevel && S.level < CFG.levels.length - 1) levelUp();
+      hud();
+      S.timer = setTimeout(newRound, S.banner ? 2200 : 1300);
     } else {
       S.streak = 0; S.alt -= CFG.down; S.wobble = 1;
       sfxWrong(); floater(`−${CFG.down * 10} m`, '#FF8A8A');
@@ -969,6 +1009,15 @@ makeExample()
       S.timer = setTimeout(newRound, 2000);
     }
   }
+  function levelSub(i) { const L = CFG.levels[i]; return `${L.oct} octave${L.oct > 1 ? 's' : ''} · ${L.range}`; }
+  function showBanner(text, sub) { S.banner = { text, sub, life: 2.2 }; }
+  function levelUp() {
+    S.level++; S.levelCorrect = 0;
+    S.alt = Math.min(CFG.top, S.alt + 10); S.score += 20;
+    showBanner(`Level ${S.level + 1}!`, levelSub(S.level));
+    floater('+20 level bonus', '#FFF3B0'); sparkle();
+    setTimeout(() => toast(`Level ${S.level + 1}: notes now span ${CFG.levels[S.level].range}`, 'good', 2000), 300);
+  }
   function gameOver() {
     S.state = 'sinking'; S.alt = 0; S.sinkT = 0; clearTimeout(S.timer);
     $('gReplay').disabled = true; $('gRef').disabled = true; paintKeys();
@@ -978,18 +1027,24 @@ makeExample()
     S.timer = setTimeout(() => {
       S.state = 'over';
       $('ovTitle').textContent = isBest && S.score > 0 ? 'Splash! New best!' : 'Splash!';
+      $('ovTitle').classList.add('over'); // keep the result title visible even on small screens
       $('ovText').textContent = 'You landed in the sea. Dry off and jump again?';
       const acc = S.rounds ? Math.round((S.correct / S.rounds) * 100) : 0;
-      $('ovStats').textContent = `Score ${S.score} · ${S.correct}/${S.rounds} right (${acc}%) · longest streak ${S.bestStreak}`;
+      $('ovStats').textContent = `Score ${S.score} · reached level ${S.level + 1} · ${S.correct}/${S.rounds} right (${acc}%) · longest streak ${S.bestStreak}`;
       $('ovStats').hidden = false; $('gStart').textContent = 'Jump again';
       $('gOverlay').hidden = false; hud(); $('gStart').focus();
     }, 1500);
   }
 
   $('gStart').addEventListener('click', startGame);
-  document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#gLvlSeg button').forEach(b => b.addEventListener('click', () => {
+    S.startLevel = S.level = +b.dataset.level; S.levelCorrect = 0;
+    document.querySelectorAll('#gLvlSeg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    hud();
+  }));
+  document.querySelectorAll('#gDiffSeg button').forEach(b => b.addEventListener('click', () => {
     S.diff = b.dataset.diff;
-    document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    document.querySelectorAll('#gDiffSeg button').forEach(x => x.setAttribute('aria-pressed', x === b));
     hud();
   }));
   $('gReplay').addEventListener('click', () => {
@@ -1139,6 +1194,7 @@ makeExample()
     });
     S.wobble *= Math.exp(-dt * 2.2);
     for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.vy += p.gr * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt / p.max; if (p.life <= 0) particles.splice(i, 1); }
+    if (S.banner) { S.banner.life -= dt; if (S.banner.life <= 0) S.banner = null; }
     for (let i = floaters.length - 1; i >= 0; i--) { const f = floaters[i]; f.y -= 40 * dt; f.life -= dt; if (f.life <= 0) floaters.splice(i, 1); }
     const txt = `${Math.max(0, Math.round(S.alt * 10))} m`;
     if (txt !== shownAltText) { $('gAlt').textContent = txt; $('gAlt').style.color = S.alt < 25 ? 'var(--bad)' : ''; shownAltText = txt; }
@@ -1153,6 +1209,16 @@ makeExample()
     g.globalAlpha = 1;
     g.font = '700 22px "Bricolage Grotesque", system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
     floaters.forEach(f => { g.globalAlpha = Math.min(1, f.life); g.lineWidth = 4; g.strokeStyle = 'rgba(20,40,80,.55)'; g.strokeText(f.text, f.x, f.y); g.fillStyle = f.color; g.fillText(f.text, f.x, f.y); });
+    if (S.banner) {
+      const b = S.banner, age = 2.2 - b.life, pop = Math.min(1, age / 0.25), a = Math.min(1, b.life / 0.4);
+      g.save(); g.globalAlpha = a; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.translate(W / 2, H * 0.24); g.scale(0.6 + 0.4 * pop, 0.6 + 0.4 * pop);
+      g.font = `700 ${Math.min(56, W / 7)}px "Bricolage Grotesque", system-ui, sans-serif`;
+      g.lineWidth = 7; g.strokeStyle = 'rgba(20,40,80,.6)'; g.strokeText(b.text, 0, 0); g.fillStyle = '#FFE066'; g.fillText(b.text, 0, 0);
+      g.font = '600 17px "IBM Plex Sans", system-ui, sans-serif';
+      g.lineWidth = 4; g.strokeText(b.sub, 0, Math.min(46, W / 9)); g.fillStyle = '#FFFFFF'; g.fillText(b.sub, 0, Math.min(46, W / 9));
+      g.restore();
+    }
     g.globalAlpha = 1;
     if (danger > 0 && S.state !== 'over') {
       const pulse = 0.5 + 0.5 * Math.sin(S.t * 6), vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
@@ -1190,8 +1256,12 @@ makeExample()
     let h = Math.floor(vh - others - pad);
     h = isFs() ? Math.max(200, h) : Math.max(300, Math.min(720, h));
     stage.style.height = h + 'px';
+    stage.classList.toggle('short', h < 400); // small screens: drop the intro sentence so Jump! stays visible
   }
   window.addEventListener('resize', fitStage);
+  // re-fit whenever the HUD, controls row or keyboard change height (e.g. text wrapping)
+  const refit = new ResizeObserver(() => requestAnimationFrame(fitStage));
+  ['.hud', '.deck', '.pk'].forEach(sel => refit.observe(view.querySelector(sel)));
   if (window.visualViewport) window.visualViewport.addEventListener('resize', fitStage);
   window.addEventListener('viewchange', () => requestAnimationFrame(fitStage));
 
