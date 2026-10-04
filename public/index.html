@@ -128,7 +128,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
 .hud b { font-family: var(--f-display); font-weight: 700; font-size: 1.45rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .hud b.bump { animation: bump .45s ease; }
 @keyframes bump { 40% { transform: scale(1.25); color: var(--good); } }
-.stage { position: relative; height: clamp(520px, 78vh, 720px); border-radius: 18px; overflow: hidden; background: #8EC5FC; touch-action: manipulation; }
+.stage { position: relative; height: 480px; min-height: 220px; border-radius: 18px; overflow: hidden; background: #8EC5FC; touch-action: manipulation; }
 .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 20px; background: rgba(12, 30, 60, .45); color: #fff; backdrop-filter: blur(2px); }
 .overlay h2 { font-family: var(--f-display); font-weight: 700; font-size: clamp(2rem, 6vw, 3rem); margin: 0; letter-spacing: -0.02em; text-shadow: 0 3px 0 rgba(0,0,0,.2); }
@@ -162,8 +162,16 @@ header { display: flex; flex-direction: column; gap: 14px; }
 .pk button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @keyframes shake { 20%, 60% { translate: -5px 0; } 40%, 80% { translate: 5px 0; } }
 .kbdhint { font-family: var(--f-mono); font-size: .78rem; color: var(--muted); margin: 0; }
+.fsbtn { position: absolute; top: 12px; right: 12px; z-index: 3; width: 42px; height: 42px; border-radius: 12px; border: 0; background: rgba(15, 35, 70, .45); color: #fff; font-size: 1.25rem; line-height: 1; cursor: pointer; display: grid; place-items: center; backdrop-filter: blur(3px); }
+.fsbtn:hover { background: rgba(15, 35, 70, .65); }
+.fsbtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.fsbtn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* Full screen: the game fills the screen; the canvas takes whatever height is left after the HUD, controls and keyboard */
+#trainerView.is-fs { position: fixed; inset: 0; z-index: 1000; background: var(--bg); gap: 10px; overflow: hidden;
+  padding: max(10px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+#trainerView.is-fs .kbdhint, #trainerView.is-fs .note { display: none; }
+#trainerView.is-fs .stage { border-radius: 14px; }
 @media (max-width: 760px) {
-  .stage { height: clamp(440px, 68vh, 560px); }
   .hud b { font-size: 1.15rem; }
   .hud div { padding: 6px 10px; }
   .pk { height: 128px; }
@@ -258,6 +266,9 @@ header { display: flex; flex-direction: column; gap: 14px; }
 
     <div class="stage" id="stage">
       <canvas id="sky" aria-label="A parachutist floating above the sea"></canvas>
+      <button class="fsbtn" id="gFs" type="button" aria-label="Play full screen" title="Full screen">
+        <svg id="fsIcon" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
       <div class="toast" id="gToast" aria-live="polite"></div>
       <div class="overlay" id="gOverlay">
         <h2 id="ovTitle">Ear Trainer</h2>
@@ -1003,7 +1014,7 @@ makeExample()
     const gr = g.createLinearGradient(0, 0, 0, H);
     gr.addColorStop(0, '#2F6FD0'); gr.addColorStop(0.55, '#7DB9F7'); gr.addColorStop(1, '#D9F0FF');
     g.fillStyle = gr; g.fillRect(0, 0, W, H);
-    const sx = W - 70, sy = 62, sg = g.createRadialGradient(sx, sy, 8, sx, sy, 100);
+    const sx = W - 110, sy = 66, sg = g.createRadialGradient(sx, sy, 8, sx, sy, 100);
     sg.addColorStop(0, 'rgba(255,240,170,.95)'); sg.addColorStop(1, 'rgba(255,240,170,0)');
     g.fillStyle = sg; g.fillRect(sx - 100, sy - 100, 200, 200);
     g.fillStyle = '#FFE27A'; g.beginPath(); g.arc(sx, sy, 24, 0, Math.PI * 2); g.fill();
@@ -1122,6 +1133,48 @@ makeExample()
     }
   }
   window.addEventListener('viewchange', e => setVisible(e.detail === 'trainer'));
+
+  // ---------- Fit to screen ----------
+  const view = $('trainerView'), stage = $('stage');
+  const isFs = () => view.classList.contains('is-fs');
+  function fitStage() {
+    if (view.hidden) return;
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const gap = parseFloat(getComputedStyle(view).rowGap) || 16;
+    // everything that must stay visible below/above the canvas: HUD, controls row, answer keyboard
+    const others = ['.hud', '.deck', '.pk'].reduce((sum, sel) => sum + view.querySelector(sel).offsetHeight, 0) + gap * 3;
+    const pad = isFs() ? parseFloat(getComputedStyle(view).paddingTop) + parseFloat(getComputedStyle(view).paddingBottom) : 16;
+    let h = Math.floor(vh - others - pad);
+    h = isFs() ? Math.max(200, h) : Math.max(300, Math.min(720, h));
+    stage.style.height = h + 'px';
+  }
+  window.addEventListener('resize', fitStage);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', fitStage);
+  window.addEventListener('viewchange', () => requestAnimationFrame(fitStage));
+
+  function setFsUi(on) {
+    view.classList.toggle('is-fs', on);
+    document.documentElement.style.overflow = on ? 'hidden' : '';
+    $('gFs').setAttribute('aria-label', on ? 'Exit full screen' : 'Play full screen');
+    $('gFs').title = on ? 'Exit full screen (Esc)' : 'Full screen';
+    $('fsIcon').innerHTML = on ? '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>' : '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>';
+    requestAnimationFrame(fitStage);
+  }
+  async function toggleFs() {
+    if (isFs()) {
+      if (document.fullscreenElement) { try { await document.exitFullscreen(); } catch (_) {} }
+      setFsUi(false);
+      return;
+    }
+    setFsUi(true); // fills the window even where the browser refuses real full screen (e.g. iPhone)
+    try { if (view.requestFullscreen) await view.requestFullscreen({ navigationUI: 'hide' }); } catch (_) {}
+  }
+  $('gFs').addEventListener('click', toggleFs);
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && isFs()) setFsUi(false); else requestAnimationFrame(fitStage); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && isFs() && !document.fullscreenElement) setFsUi(false); });
+
+  // Bring the whole game (HUD to keyboard) into view when a round starts
+  $('gStart').addEventListener('click', () => { if (!isFs()) view.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   paintKeys(); resize(); draw();
   if (location.hash === '#trainer') showView('trainer');
 })();
