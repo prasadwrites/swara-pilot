@@ -147,6 +147,10 @@ header { display: flex; flex-direction: column; gap: 14px; }
 .now { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
 .chip { font: 600 .92rem var(--f-body); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; }
 .now span.q { color: var(--muted); }
+.instpick { display: inline-flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--muted); }
+.instpick span { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+.instpick select { font: 600 .92rem var(--f-body); color: var(--ink); background: var(--surface); border: 1.5px solid var(--accent); border-radius: 999px; padding: 6px 12px; cursor: pointer; max-width: 100%; }
+.instpick select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .deck .btns { display: flex; gap: 8px; flex-wrap: wrap; }
 .pk { position: relative; height: 150px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 .pk button { font: 600 .95rem var(--f-mono); cursor: pointer; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 10px; transition: transform .08s, background .15s, opacity .15s; }
@@ -176,6 +180,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
   .deck .btns { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .deck .btns .btn { justify-content: center; padding: 8px 6px; font-size: .84rem; white-space: nowrap; }
   .now .q { font-size: .88rem; }
+  .instpick span { display: none; }
 }
 @media (max-width: 760px) {
   .hud b { font-size: 1.15rem; }
@@ -290,7 +295,12 @@ header { display: flex; flex-direction: column; gap: 14px; }
     </div>
 
     <div class="deck">
-      <div class="now"><span class="chip" id="gInst">Instrument</span><span class="q" id="gPrompt">Which note is this?</span></div>
+      <div class="now">
+        <label class="instpick" for="gInstSel"><span>Instrument</span>
+          <select id="gInstSel"><option value="random">🎲 Random</option></select>
+        </label>
+        <span class="chip" id="gInst" hidden>Instrument</span><span class="q" id="gPrompt">Which note is this?</span>
+      </div>
       <div class="btns">
         <button class="btn ghost" id="gReplay" type="button" disabled>↻ Replay (−30 m)</button>
         <button class="btn ghost" id="gRef" type="button" disabled>Hear a C</button>
@@ -763,6 +773,32 @@ makeExample()
     } },
   ];
 
+  // ---------- Instrument choice ----------
+  const instSel = $('gInstSel');
+  INSTRUMENTS.forEach((inst, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = inst.name; instSel.appendChild(o); });
+  try { const saved = localStorage.getItem('ear-trainer-instrument'); if (saved && instSel.querySelector(`option[value="${saved}"]`)) instSel.value = saved; } catch (_) {}
+  function chooseInstrument() {
+    if (instSel.value !== 'random') return INSTRUMENTS[+instSel.value];
+    let i; do { i = pick(INSTRUMENTS); } while (INSTRUMENTS.length > 1 && i === S.inst);
+    return i;
+  }
+  function syncInstUi() {
+    const random = instSel.value === 'random';
+    $('gInst').hidden = !random || !S.inst || S.state === 'idle';
+    if (S.inst) $('gInst').textContent = S.inst.name;
+  }
+  instSel.addEventListener('change', () => {
+    try { localStorage.setItem('ear-trainer-instrument', instSel.value); } catch (_) {}
+    if (instSel.value !== 'random') {
+      S.inst = INSTRUMENTS[+instSel.value];
+      // preview the new sound with the reference C (no penalty)
+      if (S.state !== 'idle' && S.state !== 'over' && S.state !== 'sinking') toast(`${S.inst.name} from the next note`, '', 1300);
+      else playNote(60, S.inst, 0.7, 0.45);
+    } else toast('🎲 A different instrument each note', '', 1300);
+    syncInstUi(); instSel.blur();
+    requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+  });
+
   // ---------- Tunes (all end on the tonic) ----------
   const MAJ = [0, 2, 4, 5, 7, 9, 11], MIN = [0, 2, 3, 5, 7, 8, 10];
   const deg = (sc, n) => sc[((n % 7) + 7) % 7] + 12 * Math.floor(n / 7);
@@ -892,10 +928,10 @@ makeExample()
     let k; do { k = Math.floor(Math.random() * 12); } while (k === S.lastKey);
     S.key = S.lastKey = k;
     S.root = 55 + ((k - 7 + 12) % 12); // G3..F#4
-    S.inst = pick(INSTRUMENTS);
+    S.inst = chooseInstrument();
     S.choices = makeChoices(k, CFG.choices[S.diff]);
     S.rounds++;
-    $('gInst').textContent = S.inst.name;
+    syncInstUi();
     $('gPrompt').textContent = `Note ${S.rounds} · which one is it?`;
     $('gReplay').disabled = false; $('gRef').disabled = false;
     S.state = 'answer'; paintKeys();

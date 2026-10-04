@@ -1,4 +1,4 @@
-# Swara Pilot · Song Key Finder
+# Swara Pilot
 
 A single-page web app with two parts:
 
