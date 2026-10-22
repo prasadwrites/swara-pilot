@@ -122,11 +122,6 @@ header { display: flex; flex-direction: column; gap: 14px; }
 
 /* ---------- Ear trainer ---------- */
 :root { --good: #12A594; --bad: #E5484D; --gold: #F5B70A; }
-.hud { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
-.hud div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; display: flex; flex-direction: column; min-width: 0; }
-.hud .lbl { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.hud b { font-family: var(--f-display); font-weight: 700; font-size: 1.45rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
-.hud b.bump { animation: bump .45s ease; }
 .lvlbar { display: block; height: 4px; border-radius: 2px; background: var(--line); margin-top: 4px; overflow: hidden; }
 .lvlbar i { display: block; height: 100%; width: 0; background: var(--gold); transition: width .3s; }
 .ovlabel { font: 500 .72rem var(--f-mono); letter-spacing: .1em; text-transform: uppercase; opacity: .85; margin-bottom: -6px; }
@@ -146,7 +141,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
 .stage.short .overlay #ovText, .stage.short .overlay h2:not(.over) { display: none; }
 .stage.short .overlay h2.over { font-size: 1.4rem; }
 .stage.short .seg { flex-wrap: nowrap; } .stage.short .seg button { padding: 5px 9px; }
-.toast { position: absolute; top: 14px; left: 50%; transform: translate(-50%, -10px); background: rgba(255,255,255,.95); color: #17325C; font: 600 1rem var(--f-body); padding: 8px 18px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.15); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; white-space: nowrap; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
+.toast { position: absolute; z-index: 6; top: 56px; left: 50%; transform: translate(-50%, -10px); background: rgba(255,255,255,.95); color: #17325C; font: 600 1rem var(--f-body); padding: 8px 18px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.15); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; white-space: nowrap; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast.good { color: var(--good); } .toast.bad { color: var(--bad); }
 .deck { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
@@ -158,10 +153,11 @@ header { display: flex; flex-direction: column; gap: 14px; }
 .instpick select { font: 600 .92rem var(--f-body); color: var(--ink); background: var(--surface); border: 1.5px solid var(--accent); border-radius: 999px; padding: 6px 12px; cursor: pointer; max-width: 100%; }
 .instpick select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .deck .btns { display: flex; gap: 8px; flex-wrap: wrap; }
-.pk { position: relative; height: 150px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.keys { position: relative; height: 150px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.pk .pkbar { display: none; }
 .pk button { font: 600 .95rem var(--f-mono); cursor: pointer; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 10px; transition: transform .08s, background .15s, opacity .15s; }
 .pk .w { background: var(--key-white); color: #2B2F39; border: 1px solid var(--line); border-radius: 0 0 10px 10px; }
-.pk .b { position: absolute; top: 0; width: 10%; height: 60%; background: var(--key-black); color: #E8EAEE; border: 0; border-radius: 0 0 8px 8px; z-index: 1; font-size: .78rem; line-height: 1.15; }
+.pk .b { position: absolute; top: 0; left: calc(var(--i) * 100% / 7 - 5%); width: 10%; height: 60%; background: var(--key-black); color: #E8EAEE; border: 0; border-radius: 0 0 8px 8px; z-index: 1; font-size: .78rem; line-height: 1.15; }
 .pk .b small { font-size: .68rem; opacity: .7; }
 .pk button.opt { box-shadow: inset 0 -6px 0 var(--accent); }
 .pk button.opt:hover { transform: translateY(2px); }
@@ -172,34 +168,82 @@ header { display: flex; flex-direction: column; gap: 14px; }
 .pk button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @keyframes shake { 20%, 60% { translate: -5px 0; } 40%, 80% { translate: 5px 0; } }
 .kbdhint { font-family: var(--f-mono); font-size: .78rem; color: var(--muted); margin: 0; }
-.fsbtn { position: absolute; top: 12px; right: 12px; z-index: 3; width: 42px; height: 42px; border-radius: 12px; border: 0; background: rgba(15, 35, 70, .45); color: #fff; font-size: 1.25rem; line-height: 1; cursor: pointer; display: grid; place-items: center; backdrop-filter: blur(3px); }
-.fsbtn:hover { background: rgba(15, 35, 70, .65); }
-.fsbtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
-.fsbtn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.ico { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* On-sky controls: see-through so the scene stays visible */
+.tools { position: absolute; top: 10px; right: 10px; z-index: 6; display: flex; gap: 6px; }
+.tool { width: 38px; height: 38px; border-radius: 11px; border: 0; background: rgba(15, 35, 70, .38); color: #fff; cursor: pointer; display: grid; place-items: center; backdrop-filter: blur(3px); transition: background .15s; }
+.tool:hover, .tool[aria-expanded="true"] { background: rgba(15, 35, 70, .68); }
+.tool:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.caption { position: absolute; top: 10px; left: 10px; z-index: 2; max-width: calc(100% - 200px); display: flex; gap: 8px; align-items: center; padding: 7px 12px; border-radius: 999px; background: rgba(15, 35, 70, .38); color: #fff; font: 600 .82rem var(--f-body); white-space: nowrap; overflow: hidden; backdrop-filter: blur(3px); }
+.caption #gPrompt { font-weight: 500; opacity: .9; overflow: hidden; text-overflow: ellipsis; }
+.caption #gPrompt:empty { display: none; }
+.statpanel { position: absolute; top: 56px; left: 10px; z-index: 5; display: grid; grid-template-columns: auto auto; gap: 1px 14px; align-items: baseline; padding: 10px 14px; border-radius: 14px; background: rgba(15, 35, 70, .55); color: #fff; backdrop-filter: blur(4px); min-width: 150px; }
+.statpanel span { font: 500 .66rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+.statpanel b { font: 700 1.05rem var(--f-display); font-variant-numeric: tabular-nums; text-align: right; }
+.statpanel b.bump { animation: bump .45s ease; }
+.statpanel .lvlbar { margin: 0 0 4px; background: rgba(255,255,255,.25); }
+.pop { position: absolute; z-index: 7; top: 56px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 30px rgba(0,0,0,.22); }
+.pop.help { left: 50%; transform: translateX(-50%); width: min(440px, calc(100% - 20px)); max-height: calc(100% - 66px); overflow-y: auto; padding: 16px 18px; font-size: .9rem; }
+.pop.help h3 { font: 700 1.1rem var(--f-display); margin: 0 0 6px; }
+.pop.help p { margin: 0 0 8px; } .pop.help ul { margin: 0 0 8px; padding-left: 18px; display: grid; gap: 4px; }
+.pop.help .mono { font: .78rem var(--f-mono); color: var(--muted); margin: 0; }
+.popx { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 1.3rem; cursor: pointer; }
+.pop.menu { right: 10px; width: min(270px, calc(100% - 20px)); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.menuhd { font: 500 .7rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 10px 4px; }
+.pop.menu button { text-align: left; border: 0; background: transparent; color: var(--ink); border-radius: 10px; padding: 8px 10px 8px 30px; cursor: pointer; display: flex; flex-direction: column; position: relative; font: inherit; }
+.pop.menu button:hover { background: var(--accent-soft); }
+.pop.menu button small { color: var(--muted); font-size: .78rem; }
+.pop.menu button[aria-checked="true"]::before { content: "✓"; position: absolute; left: 10px; top: 8px; color: var(--accent); font-weight: 700; }
+.cc { display: none; font: 700 .9rem var(--f-mono); margin-left: -2px; }
+
+/* Keyboard placement modes */
+.overlay:not([hidden]) ~ .pk { visibility: hidden; }
+.pk.mode-float, .pk.mode-side { position: absolute; z-index: 4; background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .35); backdrop-filter: blur(3px); box-shadow: 0 8px 24px rgba(10, 30, 60, .2); }
+.pk.mode-float .keys button, .pk.mode-side .keys button { opacity: .9; }
+.pk.mode-float .keys button.off, .pk.mode-side .keys button.off { opacity: .32; }
+.pk.mode-float { width: min(440px, calc(100% - 20px)); border-radius: 14px; padding: 0 6px 6px; }
+.pk.mode-float .pkbar { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 2px; color: #fff; font: 500 .72rem var(--f-mono); letter-spacing: .04em; cursor: grab; touch-action: none; user-select: none; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.pk.mode-float.dragging .pkbar { cursor: grabbing; }
+.pk.mode-float.locked .pkbar { cursor: default; }
+.pk.mode-float .grip { font-size: 1rem; opacity: .85; }
+.pk.mode-float.locked .grip { opacity: .3; }
+.pklock { margin-left: auto; width: 28px; height: 24px; border: 0; border-radius: 7px; background: rgba(15, 35, 70, .4); color: #fff; display: grid; place-items: center; cursor: pointer; }
+.pklock .ico { width: 15px; height: 15px; }
+.pklock[aria-pressed="true"] { background: var(--gold); color: #2B1D00; }
+.pk.mode-float .keys { height: 112px; }
+.pk.mode-side { right: 10px; top: 56px; bottom: 10px; width: 96px; border-radius: 12px; padding: 4px; }
+.pk.mode-side .keys { height: 100%; grid-template-columns: 1fr; grid-template-rows: repeat(7, 1fr); gap: 3px; }
+.pk.mode-side .w { border-radius: 0 9px 9px 0; flex-direction: row; justify-content: flex-end; align-items: center; padding: 0 10px 0 0; }
+.pk.mode-side .b { top: auto; left: 0; bottom: calc(var(--i) * 100% / 7 - 4.6%); width: 56%; height: 9.2%; border-radius: 0 7px 7px 0; flex-direction: row; justify-content: center; align-items: center; padding: 0; font-size: .72rem; }
+.pk.mode-side .b small { display: none; }
+.pk.mode-side button.opt { box-shadow: inset -5px 0 0 var(--accent); }
+.pk.mode-side button.opt:hover { transform: translateX(-2px); }
 /* Full screen: the game fills the screen; the canvas takes whatever height is left after the HUD, controls and keyboard */
 #trainerView.is-fs { position: fixed; inset: 0; z-index: 1000; background: var(--bg); gap: 10px; overflow: hidden;
   padding: max(10px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
 #trainerView.is-fs .kbdhint, #trainerView.is-fs .note { display: none; }
 #trainerView.is-fs .stage { border-radius: 14px; }
 @media (max-width: 560px) {
-  .deck { gap: 8px; }
-  .deck .btns { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-  .deck .btns .btn { justify-content: center; padding: 8px 6px; font-size: .84rem; white-space: nowrap; }
-  .now .q { font-size: .88rem; }
+  .deck { gap: 8px; flex-wrap: nowrap; }
+  .instpick { flex: 1; min-width: 0; }
   .instpick span { display: none; }
+  .instpick select { width: 100%; }
+  .deck .btns { flex-wrap: nowrap; gap: 6px; }
+  .deck .btns .btn { width: 44px; height: 40px; padding: 0; gap: 0; justify-content: center; }
+  .deck .btns .btn .t { display: none; }
+  .cc { display: inline; }
+  .caption { max-width: calc(100% - 192px); font-size: .76rem; padding: 6px 10px; }
+  .tool { width: 36px; height: 36px; }
+  .pk.mode-side { width: 78px; }
 }
 @media (max-width: 760px) {
-  .hud { gap: 6px; }
   .overlay { gap: 8px; padding: 12px 14px; }
   .overlay h2 { font-size: 1.6rem; }
   .overlay p { font-size: .84rem; line-height: 1.35; }
   .ovlabel { margin-bottom: -3px; }
   .seg button { padding: 5px 11px; font-size: .84rem; }
   .go { padding: 10px 30px; }
-  .hud b { font-size: .95rem; white-space: nowrap; letter-spacing: -0.02em; }
-  .hud div { padding: 6px 7px; }
-  .hud .lbl { font-size: .58rem; letter-spacing: .04em; }
-  .pk { height: 128px; }
+  .keys { height: 128px; }
 }
 
 @media (max-width: 760px) {
@@ -282,19 +326,50 @@ header { display: flex; flex-direction: column; gap: 14px; }
   </div>
 
   <section class="view" id="trainerView" role="tabpanel" aria-labelledby="tabTrainer" hidden>
-    <div class="hud">
-      <div><span class="lbl">Score</span><b id="gScore">0</b></div>
-      <div><span class="lbl">Streak</span><b id="gStreak">0</b></div>
-      <div><span class="lbl">Altitude</span><b id="gAlt">600 m</b></div>
-      <div><span class="lbl">Level</span><b id="gLevel">1</b><span class="lvlbar" title="Progress to the next level"><i id="gLvlFill"></i></span></div>
-      <div><span class="lbl">Best</span><b id="gBest">0</b></div>
-    </div>
-
     <div class="stage" id="stage">
       <canvas id="sky" aria-label="A parachutist floating above the sea"></canvas>
-      <button class="fsbtn" id="gFs" type="button" aria-label="Play full screen" title="Full screen">
-        <svg id="fsIcon" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
-      </button>
+      <div class="caption" id="gCaption"><span id="gInst">Ear Trainer</span><span id="gPrompt"></span></div>
+
+      <div class="tools" role="toolbar" aria-label="Game tools">
+        <button class="tool" id="gStatsBtn" type="button" aria-label="Show score and stats" aria-expanded="false" title="Score and stats">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg></button>
+        <button class="tool" id="gHelpBtn" type="button" aria-label="How to play" aria-expanded="false" title="How to play">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"/><path d="M12 17.3h.01"/></svg></button>
+        <button class="tool" id="gKbdBtn" type="button" aria-label="Keyboard position" aria-expanded="false" title="Keyboard position">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6.5 10h.01M10.5 10h.01M14.5 10h.01M18 10h.01M7 14h10"/></svg></button>
+        <button class="tool" id="gFs" type="button" aria-label="Play full screen" title="Full screen">
+          <svg class="ico" id="fsIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      </div>
+
+      <div class="statpanel" id="gStats" hidden>
+        <span>Score</span><b id="gScore">0</b>
+        <span>Streak</span><b id="gStreak">0</b>
+        <span>Altitude</span><b id="gAlt">600 m</b>
+        <span>Level</span><b id="gLevel">1</b>
+        <span></span><span class="lvlbar" title="Progress to the next level"><i id="gLvlFill"></i></span>
+        <span>Best</span><b id="gBest">0</b>
+      </div>
+
+      <div class="pop help" id="gHelp" role="dialog" aria-label="How to play" hidden>
+        <button class="popx" type="button" data-close aria-label="Close">×</button>
+        <h3>How to play</h3>
+        <p>An instrument plays one note. Tap its name on the keyboard. Right answers lift your parachute; a wrong answer drops you 90 m, and you sink slowly while you think. Six right answers take you to the next level, which adds another octave of notes.</p>
+        <ul>
+          <li><b>Replay</b> plays the note again and costs 15 m.</li>
+          <li><b>Hear a C</b> plays a reference C on the same instrument, so you can count up or down from it.</li>
+          <li><b>Stats</b> (top right) shows score, streak, altitude, level and best.</li>
+          <li><b>Keyboard</b> (top right) moves the keys: below the game, floating (drag its bar, then lock it), or as a side panel with low notes at the bottom and high notes at the top.</li>
+        </ul>
+        <p class="mono">Computer keys: C D E F G A B answer · Shift for sharps (Shift+F = F#) · Space replays</p>
+      </div>
+
+      <div class="pop menu" id="gKbdMenu" role="menu" aria-label="Keyboard position" hidden>
+        <span class="menuhd">Keyboard position</span>
+        <button type="button" role="menuitemradio" data-mode="dock" aria-checked="true"><b>Below the game</b><small>Full-size keys under the sky</small></button>
+        <button type="button" role="menuitemradio" data-mode="float" aria-checked="false"><b>Floating</b><small>See-through; drag the bar, then lock it</small></button>
+        <button type="button" role="menuitemradio" data-mode="side" aria-checked="false"><b>Right side panel</b><small>See-through; low notes at the bottom, high at the top</small></button>
+      </div>
+
       <div class="toast" id="gToast" aria-live="polite"></div>
       <div class="overlay" id="gOverlay">
         <h2 id="ovTitle">Ear Trainer</h2>
@@ -318,21 +393,24 @@ header { display: flex; flex-direction: column; gap: 14px; }
     </div>
 
     <div class="deck">
-      <div class="now">
-        <label class="instpick" for="gInstSel"><span>Instrument</span>
-          <select id="gInstSel"><option value="random">🎲 Random</option></select>
-        </label>
-        <span class="chip" id="gInst" hidden>Instrument</span><span class="q" id="gPrompt">Which note is this?</span>
-      </div>
+      <label class="instpick" for="gInstSel"><span>Instrument</span>
+        <select id="gInstSel"><option value="random">🎲 Random</option></select>
+      </label>
       <div class="btns">
-        <button class="btn ghost" id="gReplay" type="button" disabled>↻ Replay (−15 m)</button>
-        <button class="btn ghost" id="gRef" type="button" disabled>Hear a C</button>
-        <button class="btn ghost" id="gFs2" type="button">⛶ Full screen</button>
+        <button class="btn ghost" id="gReplay" type="button" disabled aria-label="Replay the note (costs 15 m)" title="Replay (−15 m)">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5"/><path d="M3.5 3.5v5h5"/></svg><span class="t">Replay (−15 m)</span></button>
+        <button class="btn ghost" id="gRef" type="button" disabled aria-label="Hear a reference C" title="Hear a C">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span class="t">Hear a C</span><b class="cc">C</b></button>
       </div>
     </div>
-    <div class="pk" id="gKeys" aria-label="Answer keys"></div>
-    <p class="kbdhint">Keyboard: press C D E F G A B to answer, hold Shift for sharps (Shift+F = F#). Space replays.</p>
-    <p class="note">Each round is a single note from the 12 (C to B), in a random octave and on a random instrument. "Hear a C" plays a reference C on the same instrument so you can compare the two and count up or down.</p>
+
+    <div class="pk mode-dock" id="gPk">
+      <div class="pkbar" id="gPkBar">
+        <span class="grip" aria-hidden="true">⠿</span><span id="gPkGrip">Drag to move</span>
+        <button class="pklock" id="gPkLock" type="button" aria-pressed="false" aria-label="Lock keyboard position"></button>
+      </div>
+      <div class="keys" id="gKeys" aria-label="Answer keys"></div>
+    </div>
   </section>
 </div>
 
@@ -815,8 +893,7 @@ makeExample()
   }
   function syncInstUi() {
     const random = instSel.value === 'random';
-    $('gInst').hidden = !random || !S.inst || S.state === 'idle';
-    if (S.inst) $('gInst').textContent = S.inst.name;
+    $('gInst').textContent = S.inst && S.state !== 'idle' ? S.inst.name : 'Ear Trainer';
   }
   instSel.addEventListener('change', () => {
     try { localStorage.setItem('ear-trainer-instrument', instSel.value); } catch (_) {}
@@ -906,10 +983,10 @@ makeExample()
   const keyEls = [];
   (function buildKeys() {
     const wrap = $('gKeys'), whites = [0, 2, 4, 5, 7, 9, 11], blacks = [[1, 1], [3, 2], [6, 4], [8, 5], [10, 6]];
-    whites.forEach(pc => { const b = document.createElement('button'); b.type = 'button'; b.className = 'w'; b.textContent = NOTES[pc]; b.dataset.pc = pc; keyEls[pc] = b; wrap.appendChild(b); });
+    whites.forEach((pc, r) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'w'; b.textContent = NOTES[pc]; b.dataset.pc = pc; b.dataset.r = r + 1; keyEls[pc] = b; wrap.appendChild(b); });
     blacks.forEach(([pc, after]) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'b'; b.dataset.pc = pc;
-      b.innerHTML = `${NOTES[pc]}<small>${FLATS[NOTES[pc]]}</small>`; b.style.left = `calc(${(after / 7) * 100}% - 5%)`;
+      b.innerHTML = `${NOTES[pc]}<small>${FLATS[NOTES[pc]]}</small>`; b.style.setProperty('--i', after);
       keyEls[pc] = b; wrap.appendChild(b);
     });
     keyEls.forEach(b => b.addEventListener('click', () => answer(+b.dataset.pc)));
@@ -969,7 +1046,7 @@ makeExample()
     S.choices = makeChoices(k, CFG.choices[S.diff]);
     S.rounds++;
     syncInstUi();
-    $('gPrompt').textContent = `Level ${S.level + 1} (${L.range}) · note ${S.rounds} · which one is it?`;
+    $('gPrompt').textContent = `Level ${S.level + 1} · ${L.range}`;
     $('gReplay').disabled = false; $('gRef').disabled = false;
     S.state = 'answer'; paintKeys();
     S.phraseEnd = performance.now() + playPhrase() * 1000;
@@ -1081,14 +1158,15 @@ makeExample()
     W = Math.max(200, r.width); H = Math.max(200, r.height);
     canvas.width = W * dpr; canvas.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-  new ResizeObserver(() => { resize(); draw(); }).observe(canvas.parentElement);
+  new ResizeObserver(() => { resize(); if (typeof layoutKeyboard === 'function') layoutKeyboard(); draw(); }).observe(canvas.parentElement);
 
   const clouds = Array.from({ length: 9 }, () => ({ x: Math.random() * 900, y: Math.random() * 300, s: 0.6 + Math.random() * 0.9, v: 6 + Math.random() * 14, a: 0.55 + Math.random() * 0.4 }));
   const gulls = Array.from({ length: 3 }, (_, i) => ({ x: Math.random() * 900, y: 60 + i * 70, v: 18 + Math.random() * 20, ph: Math.random() * 6 }));
   const particles = [], floaters = [];
   const seaY = () => H - 62;
   const altToY = a => { const y0 = seaY() - 26, y1 = 128; return y0 - (a / 100) * (y0 - y1); };
-  const playerX = () => W * 0.5 + Math.sin(S.t * 0.6) * Math.min(80, W * 0.12);
+  const skyW = () => W - (S.rightInset || 0);
+  const playerX = () => skyW() * 0.5 + Math.sin(S.t * 0.6) * Math.min(80, skyW() * 0.12);
 
   function sparkle() {
     const x = playerX(), y = altToY(S.shown) - 60;
@@ -1212,7 +1290,7 @@ makeExample()
     if (S.banner) {
       const b = S.banner, age = 2.2 - b.life, pop = Math.min(1, age / 0.25), a = Math.min(1, b.life / 0.4);
       g.save(); g.globalAlpha = a; g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.translate(W / 2, H * 0.24); g.scale(0.6 + 0.4 * pop, 0.6 + 0.4 * pop);
+      g.translate(skyW() / 2, H * 0.24); g.scale(0.6 + 0.4 * pop, 0.6 + 0.4 * pop);
       g.font = `700 ${Math.min(56, W / 7)}px "Bricolage Grotesque", system-ui, sans-serif`;
       g.lineWidth = 7; g.strokeStyle = 'rgba(20,40,80,.6)'; g.strokeText(b.text, 0, 0); g.fillStyle = '#FFE066'; g.fillText(b.text, 0, 0);
       g.font = '600 17px "IBM Plex Sans", system-ui, sans-serif';
@@ -1251,17 +1329,19 @@ makeExample()
     const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
     const gap = parseFloat(getComputedStyle(view).rowGap) || 16;
     // everything that must stay visible below/above the canvas: HUD, controls row, answer keyboard
-    const others = ['.hud', '.deck', '.pk'].reduce((sum, sel) => sum + view.querySelector(sel).offsetHeight, 0) + gap * 3;
+    const pkEl = $('gPk'), docked = pkEl.classList.contains('mode-dock');
+    const others = view.querySelector('.deck').offsetHeight + (docked ? pkEl.offsetHeight + gap : 0) + gap;
     const pad = isFs() ? parseFloat(getComputedStyle(view).paddingTop) + parseFloat(getComputedStyle(view).paddingBottom) : 16;
     let h = Math.floor(vh - others - pad);
     h = isFs() ? Math.max(200, h) : Math.max(300, Math.min(720, h));
     stage.style.height = h + 'px';
     stage.classList.toggle('short', h < 400); // small screens: drop the intro sentence so Jump! stays visible
+    requestAnimationFrame(layoutKeyboard);
   }
   window.addEventListener('resize', fitStage);
   // re-fit whenever the HUD, controls row or keyboard change height (e.g. text wrapping)
   const refit = new ResizeObserver(() => requestAnimationFrame(fitStage));
-  ['.hud', '.deck', '.pk'].forEach(sel => refit.observe(view.querySelector(sel)));
+  ['.deck', '#gPk'].forEach(sel => refit.observe(view.querySelector(sel)));
   if (window.visualViewport) window.visualViewport.addEventListener('resize', fitStage);
   window.addEventListener('viewchange', () => requestAnimationFrame(fitStage));
 
@@ -1270,7 +1350,6 @@ makeExample()
     document.documentElement.style.overflow = on ? 'hidden' : '';
     $('gFs').setAttribute('aria-label', on ? 'Exit full screen' : 'Play full screen');
     $('gFs').title = on ? 'Exit full screen (Esc)' : 'Full screen';
-    $('gFs2').textContent = on ? '✕ Exit full screen' : '⛶ Full screen';
     $('fsIcon').innerHTML = on ? '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>' : '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>';
     requestAnimationFrame(fitStage);
   }
@@ -1284,9 +1363,92 @@ makeExample()
     try { if (view.requestFullscreen) await view.requestFullscreen({ navigationUI: 'hide' }); } catch (_) {}
   }
   $('gFs').addEventListener('click', toggleFs);
-  $('gFs2').addEventListener('click', toggleFs);
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && isFs()) setFsUi(false); else requestAnimationFrame(fitStage); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && isFs() && !document.fullscreenElement) setFsUi(false); });
+
+  // ---------- On-sky tools: stats, help, keyboard menu ----------
+  const pops = [['gHelp', 'gHelpBtn'], ['gKbdMenu', 'gKbdBtn']];
+  function closePops(except) { pops.forEach(([p, b]) => { if (p !== except) { $(p).hidden = true; $(b).setAttribute('aria-expanded', 'false'); } }); }
+  pops.forEach(([p, b]) => $(b).addEventListener('click', () => {
+    const open = $(p).hidden; closePops(p); $(p).hidden = !open; $(b).setAttribute('aria-expanded', String(open));
+  }));
+  document.querySelectorAll('.pop [data-close]').forEach(x => x.addEventListener('click', () => closePops()));
+  document.addEventListener('pointerdown', e => { if (!e.target.closest('.pop, .tools')) closePops(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePops(); });
+
+  let statsOpen = false;
+  try { statsOpen = localStorage.getItem('ear-stats-open') === '1'; } catch (_) {}
+  function setStats(open) {
+    statsOpen = open; $('gStats').hidden = !open; $('gStatsBtn').setAttribute('aria-expanded', String(open));
+    try { localStorage.setItem('ear-stats-open', open ? '1' : '0'); } catch (_) {}
+  }
+  $('gStatsBtn').addEventListener('click', () => setStats(!statsOpen));
+  setStats(statsOpen);
+
+  // ---------- Keyboard placement: below the game, floating, or right side panel ----------
+  const pk = $('gPk'), deckEl = view.querySelector('.deck');
+  const LOCK = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+  const UNLOCK = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.8"/></svg>';
+  const KB = { mode: 'dock', fx: 0.5, fy: 1, locked: false };
+  try { Object.assign(KB, JSON.parse(localStorage.getItem('ear-kbd') || '{}')); } catch (_) {}
+  if (!['dock', 'float', 'side'].includes(KB.mode)) KB.mode = 'dock';
+  const saveKB = () => { try { localStorage.setItem('ear-kbd', JSON.stringify(KB)); } catch (_) {} };
+
+  function layoutKeyboard() {
+    if (KB.mode === 'float') {
+      const sw = stage.clientWidth, sh = stage.clientHeight, w = pk.offsetWidth, h = pk.offsetHeight;
+      pk.style.left = Math.round(Math.min(1, Math.max(0, KB.fx)) * Math.max(0, sw - w)) + 'px';
+      pk.style.top = Math.round(Math.min(1, Math.max(0, KB.fy)) * Math.max(0, sh - h)) + 'px';
+    }
+    S.rightInset = KB.mode === 'side' ? pk.offsetWidth + 14 : 0;
+  }
+  function syncLock() {
+    pk.classList.toggle('locked', KB.locked);
+    const b = $('gPkLock'); b.innerHTML = KB.locked ? LOCK : UNLOCK;
+    b.setAttribute('aria-pressed', String(KB.locked));
+    b.setAttribute('aria-label', KB.locked ? 'Unlock keyboard position' : 'Lock keyboard position');
+    b.title = KB.locked ? 'Unlock' : 'Lock in place';
+    $('gPkGrip').textContent = KB.locked ? 'Locked' : 'Drag to move';
+  }
+  function setKbdMode(mode, fromUser) {
+    KB.mode = mode; saveKB();
+    pk.classList.remove('mode-dock', 'mode-float', 'mode-side'); pk.classList.add('mode-' + mode);
+    if (mode === 'dock') { deckEl.after(pk); pk.style.left = pk.style.top = ''; }
+    else if (pk.parentElement !== stage) stage.appendChild(pk);
+    keyEls.forEach(b => { if (b.dataset.r) b.style.gridRow = mode === 'side' ? String(8 - +b.dataset.r) : ''; }); // side: C at the bottom, B at the top
+    document.querySelectorAll('#gKbdMenu [data-mode]').forEach(x => x.setAttribute('aria-checked', String(x.dataset.mode === mode)));
+    requestAnimationFrame(() => {
+      fitStage(); layoutKeyboard();
+      if (fromUser && !isFs()) view.scrollIntoView({ block: 'start' }); // keep the whole game in view after the layout changes
+    });
+  }
+  document.querySelectorAll('#gKbdMenu [data-mode]').forEach(x => x.addEventListener('click', () => {
+    setKbdMode(x.dataset.mode, true); closePops();
+    if (x.dataset.mode === 'float' && !KB.locked) toast('Drag the bar to move it, then tap the lock', '', 2000);
+  }));
+
+  // dragging the floating keyboard by its bar
+  const bar = $('gPkBar'); let drag = null;
+  bar.addEventListener('pointerdown', e => {
+    if (KB.mode !== 'float' || KB.locked || e.target.closest('button')) return;
+    const r = pk.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+    bar.setPointerCapture(e.pointerId); pk.classList.add('dragging'); e.preventDefault();
+  });
+  bar.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const st = stage.getBoundingClientRect(), w = pk.offsetWidth, h = pk.offsetHeight;
+    const x = Math.min(Math.max(0, e.clientX - st.left - drag.dx), Math.max(0, st.width - w));
+    const y = Math.min(Math.max(0, e.clientY - st.top - drag.dy), Math.max(0, st.height - h));
+    KB.fx = st.width > w ? x / (st.width - w) : 0; KB.fy = st.height > h ? y / (st.height - h) : 0;
+    layoutKeyboard();
+  });
+  const endDrag = () => { if (drag) { drag = null; pk.classList.remove('dragging'); saveKB(); } };
+  bar.addEventListener('pointerup', endDrag); bar.addEventListener('pointercancel', endDrag);
+  $('gPkLock').addEventListener('click', () => {
+    KB.locked = !KB.locked; saveKB(); syncLock();
+    toast(KB.locked ? 'Keyboard locked in place' : 'Unlocked: drag the bar to move it', '', 1400);
+  });
+  syncLock(); setKbdMode(KB.mode);
 
   // Bring the whole game (HUD to keyboard) into view when a round starts
   $('gStart').addEventListener('click', () => { if (!isFs()) view.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
