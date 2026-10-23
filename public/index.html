@@ -141,6 +141,17 @@ header { display: flex; flex-direction: column; gap: 14px; }
 .stage.short .overlay #ovText, .stage.short .overlay h2:not(.over) { display: none; }
 .stage.short .overlay h2.over { font-size: 1.4rem; }
 .stage.short .seg { flex-wrap: nowrap; } .stage.short .seg button { padding: 5px 9px; }
+/* Octave gauge: shows which octave the note is coming from, only while it sounds */
+.octbadge { position: absolute; left: 10px; bottom: 10px; z-index: 1; display: flex; align-items: center; gap: 7px; padding: 6px 9px 6px 8px; border-radius: 12px; background: rgba(15, 35, 70, .36); color: #fff; backdrop-filter: blur(3px); opacity: 0; transform: translateY(6px); transition: opacity .25s ease, transform .25s ease; pointer-events: none; }
+.octbadge.show { opacity: .92; transform: none; }
+.octbadge .rungs { display: flex; flex-direction: column-reverse; gap: 3px; }
+.octbadge .rung { display: block; width: 20px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .18); transition: background .2s, box-shadow .2s; }
+.octbadge .rung.inlevel { background: rgba(255, 255, 255, .45); }
+.octbadge .rung.on { background: var(--gold); box-shadow: 0 0 6px rgba(245, 183, 10, .9); }
+.octbadge .olbl { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.octbadge small { font: 500 .52rem var(--f-mono); letter-spacing: .08em; opacity: .85; }
+.octbadge b { font: 700 1.15rem var(--f-display); font-variant-numeric: tabular-nums; }
+.overlay:not([hidden]) ~ .octbadge { display: none; }
 .toast { position: absolute; z-index: 6; top: 56px; left: 50%; transform: translate(-50%, -10px); background: rgba(255,255,255,.95); color: #17325C; font: 600 1rem var(--f-body); padding: 8px 18px; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.15); opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; white-space: nowrap; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast.good { color: var(--good); } .toast.bad { color: var(--bad); }
@@ -370,6 +381,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
         <button type="button" role="menuitemradio" data-mode="side" aria-checked="false"><b>Right side panel</b><small>See-through; low notes at the bottom, high at the top</small></button>
       </div>
 
+      <div class="octbadge" id="gOct" aria-hidden="true"><span class="rungs" id="gOctRungs"></span><span class="olbl"><small>OCTAVE</small><b id="gOctNum">4</b></span></div>
       <div class="toast" id="gToast" aria-live="polite"></div>
       <div class="overlay" id="gOverlay">
         <h2 id="ovTitle">Ear Trainer</h2>
@@ -970,7 +982,22 @@ makeExample()
   function playNote(midi, inst, dur = 1.2, vel = 0.55) {
     const c = audioCtx(), o = freshBus();
     inst.play(c, o, midi, c.currentTime + 0.06, dur, vel);
+    showOctave(midi, dur);
     return dur + 0.15;
+  }
+  // ---------- Octave gauge ----------
+  const OCT_LO = 2, OCT_HI = 5; // the game's notes span C2–B5
+  const octRungs = [];
+  for (let o = OCT_LO; o <= OCT_HI; o++) { const r = document.createElement('i'); r.className = 'rung'; r.dataset.oct = o; octRungs.push(r); $('gOctRungs').appendChild(r); }
+  let octTimer = 0;
+  function showOctave(midi, dur) {
+    const oct = Math.floor(midi / 12) - 1;            // scientific pitch: middle C = C4
+    const L = CFG.levels[S.level] || CFG.levels[0];
+    const lo = Math.floor(L.base / 12) - 1, hi = lo + L.oct - 1;  // octaves this level can use
+    octRungs.forEach(r => { const o = +r.dataset.oct; r.classList.toggle('on', o === oct); r.classList.toggle('inlevel', o >= lo && o <= hi); });
+    $('gOctNum').textContent = oct;
+    const el = $('gOct'); el.classList.add('show');
+    clearTimeout(octTimer); octTimer = setTimeout(() => el.classList.remove('show'), (dur + 0.5) * 1000);
   }
   function playEvents(events, root, inst, vel = 0.5) {
     const c = audioCtx(), o = gameOut(), t0 = c.currentTime + 0.08;
