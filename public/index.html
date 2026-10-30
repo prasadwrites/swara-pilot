@@ -367,7 +367,7 @@ header { display: flex; flex-direction: column; gap: 14px; }
         <p>An instrument plays one note. Tap its name on the keyboard. Right answers lift your parachute; a wrong answer drops you 90 m, and you sink slowly while you think. Six right answers take you to the next level, which adds another octave of notes.</p>
         <ul>
           <li><b>Replay</b> plays the note again and costs 15 m.</li>
-          <li><b>Hear a C</b> plays a reference C on the same instrument, so you can count up or down from it.</li>
+          <li><b>Hear a C</b> plays the C from the same octave as the note, on the same instrument, so you can count up from it.</li>
           <li><b>Stats</b> (top right) shows score, streak, altitude, level and best.</li>
           <li><b>Keyboard</b> (top right) moves the keys: below the game, floating (drag its bar, then lock it), or as a side panel with low notes at the bottom and high notes at the top.</li>
         </ul>
@@ -1192,8 +1192,10 @@ makeExample()
   });
   $('gRef').addEventListener('click', () => {
     if (!S.inst) return;
-    playNote(60, S.inst, 0.9, 0.5);
-    toast('That was C', '', 900);
+    // the C at the bottom of the octave the current note comes from (falls back to middle C before the first note)
+    const cMidi = S.root ? S.root - (((S.root % 12) + 12) % 12) : 60;
+    playNote(cMidi, S.inst, 0.9, 0.5);
+    toast(`That was C${Math.floor(cMidi / 12) - 1}`, '', 900);
   });
   document.addEventListener('keydown', e => {
     if (!S.visible || e.metaKey || e.ctrlKey || e.altKey) return;
