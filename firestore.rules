@@ -1,0 +1,18 @@
+rules_version = '2';
+// Swara Pilot access list.
+// Add a player: Firestore > allowedUsers > Add document, Document ID = their email in lowercase.
+// A signed-in player can read only their own entry, and only once their email is verified.
+// Nobody can read the whole list or change it from the website.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /allowedUsers/{email} {
+      allow get: if request.auth != null
+                 && request.auth.token.email_verified == true
+                 && request.auth.token.email.lower() == email;
+      allow list, write: if false;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

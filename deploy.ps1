@@ -51,6 +51,10 @@ if ($LASTEXITCODE -ne 0) {
   firebase deploy --only hosting --project $ProjectId
 }
 
+# Access list rules (who may sign in). Needs the Firestore database to exist; see README > Login.
+firebase deploy --only firestore:rules --project $ProjectId
+if ($LASTEXITCODE -ne 0) { Write-Host "Skipped the access-list rules. Create the Firestore database first (README > Login), then run this script again." -ForegroundColor Yellow }
+
 Write-Host "`nDone!" -ForegroundColor Green
 Write-Host "GitHub:   $RepoUrl"
 Write-Host "Live app: https://$ProjectId.web.app"

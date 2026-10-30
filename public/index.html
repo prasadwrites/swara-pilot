@@ -265,7 +265,100 @@ header { display: flex; flex-direction: column; gap: 14px; }
 </style>
 <style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
-<body>
+<body class="ag-locked">
+<!-- ===== Swara Pilot sign-in gate (Firebase Hosting build only) ===== -->
+<style>
+body.ag-locked > *:not(#authGate) { display: none !important; }
+#authGate { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; background: var(--bg); color: var(--ink); font-family: var(--f-body); }
+body:not(.ag-locked) #authGate { display: none; }
+.ag-card { width: min(400px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px 26px 22px; box-shadow: 0 18px 50px rgba(15, 35, 70, .10); display: flex; flex-direction: column; gap: 14px; }
+.ag-brand { display: flex; align-items: center; gap: 10px; font: 600 .74rem var(--f-mono); letter-spacing: .14em; color: var(--muted); }
+.ag-brand svg { width: 34px; height: 34px; flex: none; }
+.ag-card h1 { font: 700 1.7rem var(--f-display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.ag-sub { margin: -6px 0 0; color: var(--muted); font-size: .92rem; }
+.ag-pane { display: flex; flex-direction: column; gap: 12px; }
+.ag-pane p { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
+.ag-btn { font: 600 .98rem var(--f-body); border-radius: 12px; padding: 12px 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); width: 100%; }
+.ag-btn:hover { border-color: var(--accent); }
+.ag-btn:disabled { opacity: .55; cursor: progress; }
+.ag-primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.ag-google svg { width: 18px; height: 18px; }
+.ag-btn:focus-visible, .ag-link:focus-visible, .ag-card input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ag-or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .8rem; }
+.ag-or::before, .ag-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.ag-card form { display: flex; flex-direction: column; gap: 6px; }
+.ag-card label { font: 500 .8rem var(--f-body); color: var(--muted); margin-top: 4px; }
+.ag-card input { font: 1rem var(--f-body); padding: 11px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); }
+.ag-card form .ag-btn { margin-top: 10px; }
+.ag-links { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.ag-link { border: 0; background: none; padding: 2px 0; color: var(--accent); font: 500 .88rem var(--f-body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.ag-msg { margin: 0; min-height: 1.2em; font-size: .88rem; }
+.ag-msg.err { color: var(--bad, #E5484D); }
+.ag-msg.ok { color: var(--good, #12A594); }
+.ag-spin { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); animation: agspin .8s linear infinite; }
+@keyframes agspin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ag-spin { animation: none; } }
+.ag-user { display: inline-flex; align-items: center; gap: 8px; font-size: .84rem; color: var(--muted); max-width: 100%; }
+.ag-user span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 22ch; }
+.ag-user button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 4px 12px; font: 500 .82rem var(--f-body); cursor: pointer; }
+</style>
+
+<div id="authGate" role="main">
+  <div class="ag-card">
+    <div class="ag-brand">
+      <svg viewBox="0 0 34 34" aria-hidden="true"><path d="M4 17a13 13 0 0 1 26 0z" fill="#FF6B5B"/><path d="M12.7 17a4.3 13 0 0 1 8.6 0z" fill="#FFC93C"/><path d="M5 17l12 11 12-11" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="17" cy="28.5" r="2.6" fill="currentColor"/></svg>
+      SWARA PILOT
+    </div>
+    <h1 id="agTitle">Sign in to play</h1>
+    <p class="ag-sub" id="agSub">Find the key of any song and train your ear with the parachute game.</p>
+
+    <div class="ag-pane" id="agLoading"><div class="ag-spin" aria-label="Loading"></div></div>
+
+    <div class="ag-pane" id="agSignIn" hidden>
+      <button class="ag-btn ag-google" id="agGoogle" type="button">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.7 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"/><path fill="#FBBC05" d="M10.6 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.2-13.4-9.9l-8 6.1C6.6 42.6 14.6 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+      <div class="ag-or">or use email</div>
+      <form id="agForm" novalidate>
+        <label for="agEmail">Email</label>
+        <input id="agEmail" type="email" autocomplete="email" inputmode="email" required>
+        <label for="agPass">Password</label>
+        <input id="agPass" type="password" autocomplete="current-password" minlength="6" required>
+        <button class="ag-btn ag-primary" id="agSubmit" type="submit">Sign in</button>
+      </form>
+      <div class="ag-links">
+        <button class="ag-link" id="agToggle" type="button">New here? Create an account</button>
+        <button class="ag-link" id="agForgot" type="button">Forgot password?</button>
+      </div>
+    </div>
+
+    <div class="ag-pane" id="agVerify" hidden>
+      <p>We sent a verification link to <b id="agVEmail"></b>. Open it, then come back here.</p>
+      <button class="ag-btn ag-primary" id="agVDone" type="button">I've verified my email</button>
+      <div class="ag-links">
+        <button class="ag-link" id="agVResend" type="button">Send the link again</button>
+        <button class="ag-link ag-out" type="button">Use a different account</button>
+      </div>
+    </div>
+
+    <div class="ag-pane" id="agDenied" hidden>
+      <p><b id="agDEmail"></b> isn't on the Swara Pilot player list yet.</p>
+      <p class="ag-sub">Ask the person who runs Swara Pilot to add this email, then press Try again.</p>
+      <button class="ag-btn ag-primary" id="agRetry" type="button">Try again</button>
+      <div class="ag-links"><button class="ag-link ag-out" type="button">Sign in with a different account</button></div>
+    </div>
+
+    <div class="ag-pane" id="agUnavailable" hidden>
+      <p>Sign-in couldn't start. Check your internet connection and reload the page.</p>
+      <button class="ag-btn ag-primary" type="button" onclick="location.reload()">Reload</button>
+    </div>
+
+    <p class="ag-msg" id="agMsg" role="alert" aria-live="polite"></p>
+  </div>
+</div>
+<!-- ===== end sign-in gate markup ===== -->
+
 
 
 <div class="wrap">
@@ -1519,5 +1612,160 @@ makeExample()
 })();
 </script>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// ===== Swara Pilot sign-in gate =====
+// Firebase Authentication (Google + email/password) and a private allow-list in Firestore:
+// allowedUsers/{lowercase email}. Each signed-in person may read only their own entry (see firestore.rules).
+(() => {
+  const $a = id => document.getElementById(id);
+  const PANES = ['agLoading', 'agSignIn', 'agVerify', 'agDenied', 'agUnavailable'];
+  const TITLES = {
+    agLoading: ['Signing you in…', 'Checking your account.'],
+    agSignIn: ['Sign in to play', 'Find the key of any song and train your ear with the parachute game.'],
+    agVerify: ['Check your email', 'One quick step before you can play.'],
+    agDenied: ['Almost there', 'Swara Pilot is invite-only for now.'],
+    agUnavailable: ['Sign-in is offline', ''],
+  };
+  let createMode = false;
+
+  function show(id) {
+    PANES.forEach(p => { $a(p).hidden = p !== id; });
+    $a('agTitle').textContent = TITLES[id][0];
+    $a('agSub').textContent = TITLES[id][1]; $a('agSub').hidden = !TITLES[id][1];
+  }
+  function msg(text, kind) { const m = $a('agMsg'); m.textContent = text || ''; m.className = 'ag-msg ' + (kind || ''); }
+  function busy(on) { ['agGoogle', 'agSubmit', 'agVDone', 'agRetry'].forEach(id => { const b = $a(id); if (b) b.disabled = on; }); }
+  function lock() { document.body.classList.add('ag-locked'); const u = $a('agUser'); if (u) u.hidden = true; }
+  function unlock(user) {
+    document.body.classList.remove('ag-locked'); msg('');
+    let pill = $a('agUser');
+    if (!pill) {
+      pill = document.createElement('div'); pill.className = 'ag-user'; pill.id = 'agUser';
+      pill.innerHTML = '<span id="agUserEmail"></span><button type="button" id="agSignOut">Sign out</button>';
+      const header = document.querySelector('header'); (header || document.body).appendChild(pill);
+      $a('agSignOut').addEventListener('click', signOut);
+    }
+    $a('agUserEmail').textContent = user.email; pill.hidden = false;
+  }
+
+  const ERR = {
+    'auth/invalid-credential': 'That email and password don\'t match. Try again, or reset your password.',
+    'auth/wrong-password': 'That email and password don\'t match. Try again, or reset your password.',
+    'auth/user-not-found': 'No account uses that email yet. Choose "Create an account".',
+    'auth/invalid-email': 'That doesn\'t look like an email address.',
+    'auth/missing-password': 'Enter your password.',
+    'auth/weak-password': 'Use a password with at least 6 characters.',
+    'auth/email-already-in-use': 'An account with this email already exists. Sign in instead.',
+    'auth/too-many-requests': 'Too many tries. Wait a minute, then try again.',
+    'auth/network-request-failed': 'No connection. Check your internet and try again.',
+    'auth/popup-blocked': 'Your browser blocked the Google window. Allow pop-ups for this site, or use email.',
+    'auth/operation-not-allowed': 'This sign-in method isn\'t switched on yet. Ask the person who runs Swara Pilot.',
+    'auth/unauthorized-domain': 'Sign-in isn\'t enabled for this web address yet.',
+  };
+  const say = e => msg(ERR[e && e.code] || 'Something went wrong. Please try again.', 'err');
+
+  if (!window.firebase) { show('agUnavailable'); return; }
+  let auth, db;
+
+  async function start() {
+    try {
+      const r = await fetch('/__/firebase/init.json', { cache: 'no-store' });
+      if (!r.ok) throw new Error('no config');
+      firebase.initializeApp(await r.json());
+      auth = firebase.auth(); db = firebase.firestore();
+    } catch (_) { show('agUnavailable'); return; }
+    auth.getRedirectResult().catch(say); // finishes a Google sign-in that fell back to a full-page redirect
+    auth.onAuthStateChanged(check);
+  }
+
+  async function check(user) {
+    busy(false);
+    if (!user) { lock(); show('agSignIn'); return; }
+    const usesPassword = user.providerData.some(p => p.providerId === 'password');
+    if (usesPassword && !user.emailVerified) { lock(); $a('agVEmail').textContent = user.email; show('agVerify'); return; }
+    lock(); show('agLoading');
+    try {
+      const doc = await db.collection('allowedUsers').doc(String(user.email).toLowerCase()).get();
+      if (doc.exists) unlock(user); else denied(user);
+    } catch (e) {
+      if (e && e.code === 'permission-denied') denied(user);
+      else { denied(user); msg('Couldn\'t reach the player list. Check your connection and press Try again.', 'err'); }
+    }
+  }
+  function denied(user) { lock(); $a('agDEmail').textContent = user.email; show('agDenied'); }
+  async function signOut() { msg(''); try { await auth.signOut(); } catch (_) {} }
+
+  // ---- Google ----
+  $a('agGoogle').addEventListener('click', async () => {
+    msg(''); busy(true);
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    try { await auth.signInWithPopup(provider); }
+    catch (e) {
+      if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment')) {
+        try { await auth.signInWithRedirect(provider); return; } catch (e2) { say(e2); }
+      } else if (!(e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request'))) say(e);
+      busy(false);
+    }
+  });
+
+  // ---- Email + password ----
+  function setMode(create) {
+    createMode = create; msg('');
+    $a('agSubmit').textContent = create ? 'Create account' : 'Sign in';
+    $a('agToggle').textContent = create ? 'Have an account? Sign in' : 'New here? Create an account';
+    $a('agPass').setAttribute('autocomplete', create ? 'new-password' : 'current-password');
+    $a('agForgot').hidden = create;
+  }
+  $a('agToggle').addEventListener('click', () => setMode(!createMode));
+  $a('agForm').addEventListener('submit', async e => {
+    e.preventDefault(); msg('');
+    const email = $a('agEmail').value.trim(), pass = $a('agPass').value;
+    if (!email) { msg('Enter your email address.', 'err'); return; }
+    if (pass.length < 6) { msg(createMode ? 'Use a password with at least 6 characters.' : 'Enter your password.', 'err'); return; }
+    busy(true);
+    try {
+      if (createMode) {
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        await cred.user.sendEmailVerification();
+        msg('Account created. We sent you a verification link.', 'ok');
+      } else {
+        await auth.signInWithEmailAndPassword(email, pass);
+      }
+    } catch (err) { say(err); busy(false); }
+  });
+  $a('agForgot').addEventListener('click', async () => {
+    const email = $a('agEmail').value.trim();
+    if (!email) { msg('Type your email above first, then press "Forgot password?".', 'err'); $a('agEmail').focus(); return; }
+    try { await auth.sendPasswordResetEmail(email); msg('If that email has an account, a reset link is on its way.', 'ok'); }
+    catch (err) { if (err && err.code === 'auth/user-not-found') msg('If that email has an account, a reset link is on its way.', 'ok'); else say(err); }
+  });
+
+  // ---- Verify email ----
+  $a('agVDone').addEventListener('click', async () => {
+    const user = auth.currentUser; if (!user) return;
+    busy(true); msg('');
+    try {
+      await user.reload();
+      if (!auth.currentUser.emailVerified) { msg('Not verified yet. Open the link in the email, then press this again.', 'err'); busy(false); return; }
+      await auth.currentUser.getIdToken(true); // refresh so the player-list check sees the verified email
+      check(auth.currentUser);
+    } catch (err) { say(err); busy(false); }
+  });
+  $a('agVResend').addEventListener('click', async () => {
+    try { await auth.currentUser.sendEmailVerification(); msg('Sent. Check your inbox (and spam folder).', 'ok'); } catch (err) { say(err); }
+  });
+
+  // ---- Denied ----
+  $a('agRetry').addEventListener('click', () => { msg(''); if (auth.currentUser) check(auth.currentUser); });
+  document.querySelectorAll('.ag-out').forEach(b => b.addEventListener('click', signOut));
+
+  start();
+})();
+
+</script>
 </body>
 </html>
